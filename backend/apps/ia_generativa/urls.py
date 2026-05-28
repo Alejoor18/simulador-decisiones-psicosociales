@@ -1,7 +1,9 @@
-"""Rutas de la app ia_generativa. Pendiente de implementar."""
-
 from django.urls import path
+
+from .views import generar_caso_view
 
 app_name = 'ia_generativa'
 
-urlpatterns: list = []
+urlpatterns = [
+    path('generar-caso/', generar_caso_view, name='generar_caso'),
+]
