@@ -1,0 +1,113 @@
+# =========================================================
+# Secretos y variables de entorno
+# =========================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# =========================================================
+# Python / Django
+# =========================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+backend/media/
+backend/staticfiles/
+backend/static_collected/
+
+# Migraciones generadas: se versionan (NO se ignoran)
+# !**/migrations/*.py
+
+# =========================================================
+# Node / Angular / Frontend
+# =========================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Angular build
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+frontend/.angular/
+frontend/coverage/
+
+# =========================================================
+# Docker
+# =========================================================
+# Volúmenes locales si se materializan en el repo
+docker-data/
+
+# =========================================================
+# IDEs / Editores
+# =========================================================
+.vscode/
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*~
+
+# =========================================================
+# Sistema operativo
+# =========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# =========================================================
+# Coverage y tests
+# =========================================================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
