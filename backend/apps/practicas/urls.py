@@ -1,7 +1,12 @@
-"""Rutas de la app practicas. Pendiente de implementar."""
+"""Rutas de la app practicas."""
 
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from .views import PracticaViewSet
 
 app_name = 'practicas'
 
-urlpatterns: list = []
+router = DefaultRouter()
+router.register('', PracticaViewSet, basename='practicas')
+
+urlpatterns = router.urls
