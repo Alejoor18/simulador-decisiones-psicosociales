@@ -1,7 +1,13 @@
-"""Rutas de la app academico (estudiantes y grupos). Pendiente de implementar."""
+"""Rutas de la app academico (estudiantes y grupos)."""
 
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from .views import EstudianteViewSet, GrupoViewSet
 
 app_name = 'academico'
 
-urlpatterns: list = []
+router = DefaultRouter()
+router.register('estudiantes', EstudianteViewSet, basename='estudiantes')
+router.register('grupos', GrupoViewSet, basename='grupos')
+
+urlpatterns = router.urls
