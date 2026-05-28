@@ -15,6 +15,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Estudiante, Grupo } from '../core/models/academico.model';
 import { EstadoPractica, PracticaDetalle } from '../core/models/practicas.model';
 import { AcademicoService } from '../core/services/academico.service';
+import { ExtrasService } from '../core/services/extras.service';
 import { PracticasService } from '../core/services/practicas.service';
 
 @Component({
@@ -33,6 +34,7 @@ export class PracticaDetallePage implements OnInit {
   private readonly router = inject(Router);
   private readonly practicas = inject(PracticasService);
   private readonly academico = inject(AcademicoService);
+  private readonly extras = inject(ExtrasService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal(true);
@@ -104,5 +106,24 @@ export class PracticaDetallePage implements OnInit {
     this.practicas.finalizar(p.id).subscribe({
       next: () => { this.snackBar.open('Práctica finalizada.', 'OK', { duration: 2500 }); this.cargar(p.id); },
     });
+  }
+
+  descargarPDF() {
+    const p = this.practica();
+    if (!p) return;
+    this.extras.descargarReportePracticaPDF(p.id).subscribe((blob) => this._descargar(blob, `reporte-practica-${p.id}.pdf`));
+  }
+  descargarExcel() {
+    const p = this.practica();
+    if (!p) return;
+    this.extras.descargarReportePracticaExcel(p.id).subscribe((blob) => this._descargar(blob, `reporte-practica-${p.id}.xlsx`));
+  }
+  private _descargar(blob: Blob, nombre: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
