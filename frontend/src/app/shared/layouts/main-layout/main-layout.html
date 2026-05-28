@@ -1,0 +1,50 @@
+<mat-sidenav-container class="layout-container">
+
+  <mat-sidenav
+    #sidenav
+    class="sidenav"
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="!(isHandset$ | async)"
+    fixedInViewport>
+
+    <mat-toolbar class="sidenav-header">Menú</mat-toolbar>
+
+    <mat-nav-list>
+      @for (item of navItems; track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active-link"
+          (click)="closeIfOverMode()">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <mat-toolbar color="primary" class="topbar">
+      @if (isHandset$ | async) {
+        <button
+          type="button"
+          mat-icon-button
+          aria-label="Abrir menú"
+          (click)="sidenav.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <span class="app-name">{{ appName }}</span>
+      <span class="spacer"></span>
+      <button mat-icon-button aria-label="Cuenta">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="main-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
