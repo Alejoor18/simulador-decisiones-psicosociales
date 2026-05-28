@@ -1,0 +1,100 @@
+<div class="sim-container">
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+    <p class="loading">Cargando práctica…</p>
+  }
+
+  @if (participacion(); as p) {
+    <!-- Topbar fijo con timer + progreso -->
+    <header class="topbar">
+      <div>
+        <strong>{{ p.caso?.nombre }}</strong>
+        <div class="estudiante">{{ p.estudiante_nombre }}</div>
+      </div>
+      <div class="topbar-right">
+        <div class="timer" [class.alerta]="(tiempoRestanteSeg() ?? 0) < 60">
+          <mat-icon>schedule</mat-icon>{{ tiempoFormato() }}
+        </div>
+        <div class="prog">
+          {{ progreso() }}%
+          <mat-progress-bar mode="determinate" [value]="progreso()" />
+        </div>
+      </div>
+    </header>
+
+    <main class="contenido">
+      @if (paginas()[paginaIdx()]; as pagina) {
+
+        @if (pagina.tipo === 'intro') {
+          <mat-card class="bienvenida">
+            <h1>📖 {{ p.caso?.nombre }}</h1>
+            @if (p.caso?.descripcion) { <p class="lead">{{ p.caso?.descripcion }}</p> }
+
+            @if (p.caso?.contexto_historia) {
+              <section>
+                <h2>Contexto</h2>
+                <p class="texto">{{ p.caso?.contexto_historia }}</p>
+              </section>
+            }
+            @if (p.caso?.desarrollo_situacional) {
+              <section>
+                <h2>Desarrollo situacional</h2>
+                <p class="texto">{{ p.caso?.desarrollo_situacional }}</p>
+              </section>
+            }
+            <p class="nota">
+              Lee con calma. Cuando estés listo, avanza al primer escenario.
+              Tu progreso se guarda automáticamente.
+            </p>
+          </mat-card>
+        }
+
+        @if (pagina.tipo === 'escenario' && pagina.escenario; as esc) {
+          <mat-card class="escenario">
+            <h1>Escenario #{{ esc.orden }}: {{ esc.titulo }}</h1>
+            @if (esc.narrativa) { <p class="narrativa">{{ esc.narrativa }}</p> }
+
+            @if (esc.preguntas.length === 0) {
+              <p class="vacio">Este escenario no tiene preguntas.</p>
+            }
+
+            @for (preg of esc.preguntas; track preg.id; let i = $index) {
+              <section class="pregunta">
+                <h3>Pregunta {{ i + 1 }}: {{ preg.enunciado }}</h3>
+                <mat-radio-group
+                  [value]="seleccionDe(preg)"
+                  class="radio-list">
+                  @for (resp of preg.respuestas; track resp.id) {
+                    <mat-radio-button
+                      [value]="resp.id"
+                      (change)="responder(preg, resp)">
+                      {{ resp.texto }}
+                    </mat-radio-button>
+                  }
+                </mat-radio-group>
+              </section>
+            }
+          </mat-card>
+        }
+      }
+
+      <!-- Navegación -->
+      <nav class="nav">
+        <button mat-stroked-button (click)="anterior()" [disabled]="esPrimeraPagina()">
+          <mat-icon>arrow_back</mat-icon> Anterior
+        </button>
+
+        @if (!esUltimaPagina()) {
+          <button mat-flat-button color="primary" (click)="siguiente()">
+            Siguiente <mat-icon>arrow_forward</mat-icon>
+          </button>
+        } @else {
+          <button mat-flat-button color="warn" (click)="finalizar()">
+            <mat-icon>check</mat-icon> Finalizar práctica
+          </button>
+        }
+      </nav>
+    </main>
+  }
+</div>
