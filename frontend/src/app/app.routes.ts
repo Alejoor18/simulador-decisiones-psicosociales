@@ -1,18 +1,21 @@
 import { Routes } from '@angular/router';
 
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { Rol } from './core/models/usuario.model';
+import { MainLayout } from './shared/layouts/main-layout/main-layout';
+
 /**
  * Rutas raíz de la aplicación.
- * Todas las secciones se cargan con lazy loading para optimizar el bundle inicial.
- * Los guards y la redirección por rol se agregarán en la fase B7 (auth).
+ *
+ * Estructura:
+ * - /auth/*       → públicas, sin sidenav (componente Auth con su propio layout).
+ * - /estudiante/* → pública (acceso con código), sin sidenav todavía.
+ * - resto         → protegidas con authGuard, envueltas en MainLayout (toolbar + sidenav).
+ *                   El roleGuard filtra el acceso por rol cuando hace falta.
  */
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'docente',
-    pathMatch: 'full',
-  },
-
-  // ---------- Autenticación (públicas) ----------
+  // ---------- Rutas públicas ----------
   {
     path: 'auth',
     loadChildren: () => import('./auth/auth.routes').then((m) => m.AUTH_ROUTES),
@@ -23,59 +26,88 @@ export const routes: Routes = [
       import('./estudiante/estudiante.routes').then((m) => m.ESTUDIANTE_ROUTES),
   },
 
-  // ---------- Paneles principales ----------
+  // ---------- Rutas protegidas (envueltas en MainLayout) ----------
   {
-    path: 'admin',
-    loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
-  },
-  {
-    path: 'docente',
-    loadChildren: () => import('./docente/docente.routes').then((m) => m.DOCENTE_ROUTES),
-  },
-
-  // ---------- Módulos funcionales (docente) ----------
-  {
-    path: 'casos',
-    loadChildren: () => import('./casos/casos.routes').then((m) => m.CASOS_ROUTES),
-  },
-  {
-    path: 'ia-generativa',
-    loadChildren: () =>
-      import('./ia-generativa/ia-generativa.routes').then((m) => m.IA_GENERATIVA_ROUTES),
-  },
-  {
-    path: 'importacion-documentos',
-    loadChildren: () =>
-      import('./importacion-documentos/importacion-documentos.routes').then(
-        (m) => m.IMPORTACION_DOCUMENTOS_ROUTES,
-      ),
-  },
-  {
-    path: 'practicas',
-    loadChildren: () =>
-      import('./practicas/practicas.routes').then((m) => m.PRACTICAS_ROUTES),
-  },
-  {
-    path: 'participaciones',
-    loadChildren: () =>
-      import('./participaciones/participaciones.routes').then(
-        (m) => m.PARTICIPACIONES_ROUTES,
-      ),
-  },
-  {
-    path: 'resultados',
-    loadChildren: () =>
-      import('./resultados/resultados.routes').then((m) => m.RESULTADOS_ROUTES),
-  },
-  {
-    path: 'reportes',
-    loadChildren: () =>
-      import('./reportes/reportes.routes').then((m) => m.REPORTES_ROUTES),
+    path: '',
+    component: MainLayout,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'docente',
+        pathMatch: 'full',
+      },
+      {
+        path: 'admin',
+        loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Admin] },
+      },
+      {
+        path: 'docente',
+        loadChildren: () =>
+          import('./docente/docente.routes').then((m) => m.DOCENTE_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente] },
+      },
+      {
+        path: 'casos',
+        loadChildren: () => import('./casos/casos.routes').then((m) => m.CASOS_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Admin] },
+      },
+      {
+        path: 'ia-generativa',
+        loadChildren: () =>
+          import('./ia-generativa/ia-generativa.routes').then((m) => m.IA_GENERATIVA_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente] },
+      },
+      {
+        path: 'importacion-documentos',
+        loadChildren: () =>
+          import('./importacion-documentos/importacion-documentos.routes').then(
+            (m) => m.IMPORTACION_DOCUMENTOS_ROUTES,
+          ),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente] },
+      },
+      {
+        path: 'practicas',
+        loadChildren: () =>
+          import('./practicas/practicas.routes').then((m) => m.PRACTICAS_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Admin] },
+      },
+      {
+        path: 'participaciones',
+        loadChildren: () =>
+          import('./participaciones/participaciones.routes').then(
+            (m) => m.PARTICIPACIONES_ROUTES,
+          ),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Estudiante] },
+      },
+      {
+        path: 'resultados',
+        loadChildren: () =>
+          import('./resultados/resultados.routes').then((m) => m.RESULTADOS_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Estudiante, Rol.Admin] },
+      },
+      {
+        path: 'reportes',
+        loadChildren: () =>
+          import('./reportes/reportes.routes').then((m) => m.REPORTES_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Admin] },
+      },
+    ],
   },
 
   // ---------- Fallback ----------
   {
     path: '**',
-    redirectTo: 'docente',
+    redirectTo: 'auth/login',
   },
 ];
