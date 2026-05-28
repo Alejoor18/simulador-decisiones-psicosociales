@@ -4,19 +4,19 @@
   gap: 1rem;
 }
 
-.title {
+.head h1 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 500;
-  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.head p {
+  margin: 0.25rem 0 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.95rem;
 }
 
-.subtitle {
-  margin: 0 0 0.5rem;
-  text-align: center;
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 0.9rem;
-}
+.progress { border-radius: 999px; overflow: hidden; }
 
 .form {
   display: flex;
@@ -26,38 +26,78 @@
 
 .submit-btn {
   margin-top: 0.5rem;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .server-error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
   background-color: var(--mat-sys-error-container);
   color: var(--mat-sys-on-error-container);
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.9rem;
+  mat-icon { flex-shrink: 0; margin-top: 2px; }
+}
 
-  mat-icon {
-    flex-shrink: 0;
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--mat-sys-outline-variant);
   }
 }
 
-.footer-link {
-  margin: 0;
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--mat-sys-on-surface-variant);
+.alt-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-  a {
-    color: var(--mat-sys-primary);
-    text-decoration: none;
-    font-weight: 500;
+.alt-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--mat-sys-on-surface);
+  transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
 
-    &:hover {
-      text-decoration: underline;
-    }
+  &:hover {
+    border-color: var(--mat-sys-primary);
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent);
+    transform: translateY(-1px);
   }
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+    width: 32px; height: 32px;
+    font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  div { display: flex; flex-direction: column; }
+  strong { font-weight: 600; }
+  span { font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
 }

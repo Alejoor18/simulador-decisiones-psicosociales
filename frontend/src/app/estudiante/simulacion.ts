@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { Escenario, Pregunta, Respuesta } from '../core/models/casos.model';
 import {
@@ -23,7 +23,7 @@ interface PaginaSimulacion {
 @Component({
   selector: 'app-simulacion',
   imports: [
-    CommonModule,
+    CommonModule, RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
     MatProgressBarModule, MatRadioModule, MatSnackBarModule,
   ],
@@ -36,9 +36,10 @@ export class Simulacion implements OnInit, OnDestroy {
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal(true);
+  readonly errorInicio = signal<string | null>(null);
   readonly participacion = signal<Participacion | null>(null);
   readonly paginaIdx = signal(0);
-  readonly seleccion = new Map<number, number>(); // pregunta_id -> respuesta_id
+  readonly seleccion = signal(new Map<number, number>()); // pregunta_id -> respuesta_id
   readonly tiempoRestanteSeg = signal<number | null>(null);
 
   readonly paginas = computed<PaginaSimulacion[]>(() => {
@@ -53,6 +54,22 @@ export class Simulacion implements OnInit, OnDestroy {
   readonly esUltimaPagina = computed(() => this.paginaIdx() === this.paginas().length - 1);
   readonly esPrimeraPagina = computed(() => this.paginaIdx() === 0);
 
+  readonly totalEscenarios = computed(() => this.participacion()?.caso?.escenarios.length ?? 0);
+
+  readonly totalPreguntas = computed(() => {
+    const p = this.participacion();
+    if (!p?.caso) return 0;
+    return p.caso.escenarios.reduce((sum, e) => sum + e.preguntas.length, 0);
+  });
+
+  readonly totalRespondidas = computed(() => this.seleccion().size);
+
+  readonly progreso = computed(() => {
+    const total = this.totalPreguntas();
+    if (total === 0) return 0;
+    return Math.round((this.totalRespondidas() / total) * 100);
+  });
+
   private timerInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit() {
@@ -65,9 +82,8 @@ export class Simulacion implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading.set(false);
-        const msg = err.error?.detail || err.error?.non_field_errors?.[0] || 'No se pudo iniciar.';
-        this.snackBar.open(msg, 'OK', { duration: 4000 });
-        this.router.navigate(['/estudiante']);
+        const msg = err.error?.detail || err.error?.non_field_errors?.[0] || 'No se pudo iniciar la práctica.';
+        this.errorInicio.set(msg);
       },
     });
   }
@@ -77,15 +93,14 @@ export class Simulacion implements OnInit, OnDestroy {
   }
 
   private cargarRespuestasPrevias(p: Participacion) {
+    const m = new Map<number, number>();
     for (const rs of p.respuestas_seleccionadas) {
-      this.seleccion.set(rs.pregunta, rs.respuesta_elegida);
+      m.set(rs.pregunta, rs.respuesta_elegida);
     }
+    this.seleccion.set(m);
   }
 
   private iniciarTimer(p: Participacion) {
-    const maxSeg = p.practica && (p as any).practica_nombre ? 0 : 0; // placeholder
-    // El tiempo_max_min viene en la practica anidada en p.caso indirectamente? No.
-    // El JWT trae practica_id; cargamos el tiempo_max desde localStorage si está, o 30 default.
     const practicaActiva = JSON.parse(localStorage.getItem('simulador.practica_activa') || '{}');
     const tiempoMaxMin: number = practicaActiva.tiempo_max_min || 30;
     const inicio = p.inicio ? new Date(p.inicio).getTime() : Date.now();
@@ -97,7 +112,7 @@ export class Simulacion implements OnInit, OnDestroy {
       if (restante <= 0) {
         clearInterval(this.timerInterval);
         this.snackBar.open('Tiempo agotado. Finalizando…', 'OK', { duration: 3000 });
-        this.finalizar();
+        this.finalizar(true);
       }
     };
     tick();
@@ -115,20 +130,14 @@ export class Simulacion implements OnInit, OnDestroy {
   responder(pregunta: Pregunta, respuesta: Respuesta) {
     const p = this.participacion();
     if (!p) return;
-    this.seleccion.set(pregunta.id, respuesta.id);
+    const m = new Map(this.seleccion());
+    m.set(pregunta.id, respuesta.id);
+    this.seleccion.set(m);
     this.servicio.responder(p.id, pregunta.id, respuesta.id).subscribe();
   }
 
   seleccionDe(pregunta: Pregunta): number | undefined {
-    return this.seleccion.get(pregunta.id);
-  }
-
-  progreso(): number {
-    const p = this.participacion();
-    if (!p?.caso) return 0;
-    const totalPreg = p.caso.escenarios.reduce((sum, e) => sum + e.preguntas.length, 0);
-    if (totalPreg === 0) return 0;
-    return Math.round((this.seleccion.size / totalPreg) * 100);
+    return this.seleccion().get(pregunta.id);
   }
 
   siguiente() {
@@ -137,6 +146,7 @@ export class Simulacion implements OnInit, OnDestroy {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
+
   anterior() {
     if (this.paginaIdx() > 0) {
       this.paginaIdx.update((i) => i - 1);
@@ -144,11 +154,11 @@ export class Simulacion implements OnInit, OnDestroy {
     }
   }
 
-  finalizar() {
+  finalizar(forzado = false) {
     const p = this.participacion();
     if (!p) return;
     if (p.estado === EstadoParticipacion.Finalizada) return;
-    if (!confirm('¿Finalizar la práctica? No podrás cambiar respuestas después.')) return;
+    if (!forzado && !confirm('¿Finalizar la práctica? No podrás cambiar respuestas después.')) return;
     this.servicio.finalizar(p.id).subscribe({
       next: (res) => {
         if (this.timerInterval) clearInterval(this.timerInterval);

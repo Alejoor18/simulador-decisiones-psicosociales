@@ -1,97 +1,162 @@
-<div class="sim-container">
+<div class="sim-shell">
 
   @if (loading()) {
-    <mat-progress-bar mode="indeterminate" />
-    <p class="loading">Cargando práctica…</p>
+    <div class="splash">
+      <div class="spinner"></div>
+      <p>Cargando tu práctica…</p>
+    </div>
+  }
+
+  @if (errorInicio()) {
+    <div class="splash error">
+      <mat-icon class="big">block</mat-icon>
+      <h2>No puedes iniciar esta práctica</h2>
+      <p>{{ errorInicio() }}</p>
+      <button mat-flat-button color="primary" routerLink="/estudiante">
+        <mat-icon>arrow_back</mat-icon> Volver
+      </button>
+    </div>
   }
 
   @if (participacion(); as p) {
-    <!-- Topbar fijo con timer + progreso -->
+    <!-- Barra superior: identidad + timer + progreso -->
     <header class="topbar">
-      <div>
-        <strong>{{ p.caso?.nombre }}</strong>
-        <div class="estudiante">{{ p.estudiante_nombre }}</div>
+      <div class="topbar-left">
+        <span class="caso-pill"><mat-icon>menu_book</mat-icon>{{ p.caso?.nombre }}</span>
+        <span class="quien">{{ p.estudiante_nombre }}</span>
       </div>
       <div class="topbar-right">
-        <div class="timer" [class.alerta]="(tiempoRestanteSeg() ?? 0) < 60">
-          <mat-icon>schedule</mat-icon>{{ tiempoFormato() }}
+        <div class="timer" [class.warn]="(tiempoRestanteSeg() ?? 999) < 120" [class.danger]="(tiempoRestanteSeg() ?? 999) < 60">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ tiempoFormato() }}</span>
         </div>
         <div class="prog">
-          {{ progreso() }}%
+          <div class="prog-text">
+            <span>{{ totalRespondidas() }} / {{ totalPreguntas() }}</span>
+            <span class="pct">{{ progreso() }}%</span>
+          </div>
           <mat-progress-bar mode="determinate" [value]="progreso()" />
         </div>
       </div>
     </header>
 
+    <!-- Stepper de páginas -->
+    <nav class="dots">
+      @for (pg of paginas(); track $index; let i = $index) {
+        <button
+          type="button"
+          class="dot"
+          [class.active]="i === paginaIdx()"
+          [class.done]="i < paginaIdx()"
+          (click)="paginaIdx.set(i)"
+          [attr.aria-label]="'Ir a paso ' + (i + 1)">
+          @if (i === 0) {
+            <mat-icon>auto_stories</mat-icon>
+          } @else {
+            {{ i }}
+          }
+        </button>
+      }
+    </nav>
+
     <main class="contenido">
       @if (paginas()[paginaIdx()]; as pagina) {
 
         @if (pagina.tipo === 'intro') {
-          <mat-card class="bienvenida">
-            <h1>📖 {{ p.caso?.nombre }}</h1>
-            @if (p.caso?.descripcion) { <p class="lead">{{ p.caso?.descripcion }}</p> }
+          <article class="story-card intro anim-fade-up">
+            <span class="cap">Caso</span>
+            <h1>{{ p.caso?.nombre }}</h1>
+            @if (p.caso?.area_psicosocial) {
+              <p class="area">{{ p.caso?.area_psicosocial }}</p>
+            }
+            @if (p.caso?.descripcion) {
+              <p class="lead">{{ p.caso?.descripcion }}</p>
+            }
 
             @if (p.caso?.contexto_historia) {
-              <section>
-                <h2>Contexto</h2>
-                <p class="texto">{{ p.caso?.contexto_historia }}</p>
+              <section class="bloque">
+                <h2><mat-icon>history_edu</mat-icon> Contexto</h2>
+                <p class="narrativa">{{ p.caso?.contexto_historia }}</p>
               </section>
             }
             @if (p.caso?.desarrollo_situacional) {
-              <section>
-                <h2>Desarrollo situacional</h2>
-                <p class="texto">{{ p.caso?.desarrollo_situacional }}</p>
+              <section class="bloque">
+                <h2><mat-icon>article</mat-icon> Desarrollo situacional</h2>
+                <p class="narrativa">{{ p.caso?.desarrollo_situacional }}</p>
               </section>
             }
-            <p class="nota">
-              Lee con calma. Cuando estés listo, avanza al primer escenario.
-              Tu progreso se guarda automáticamente.
-            </p>
-          </mat-card>
+
+            <aside class="aviso">
+              <mat-icon>tips_and_updates</mat-icon>
+              <div>
+                <strong>Cómo funciona</strong>
+                <span>Recorre cada escenario, responde con la opción que MÁS represente tu decisión. Puedes cambiarla antes de finalizar.</span>
+              </div>
+            </aside>
+          </article>
         }
 
         @if (pagina.tipo === 'escenario' && pagina.escenario; as esc) {
-          <mat-card class="escenario">
-            <h1>Escenario #{{ esc.orden }}: {{ esc.titulo }}</h1>
-            @if (esc.narrativa) { <p class="narrativa">{{ esc.narrativa }}</p> }
+          <article class="story-card escenario anim-fade-up">
+            <div class="cap-row">
+              <span class="cap">Escenario {{ esc.orden }} de {{ totalEscenarios() }}</span>
+              <span class="num-preguntas">{{ esc.preguntas.length }} {{ esc.preguntas.length === 1 ? 'pregunta' : 'preguntas' }}</span>
+            </div>
+            <h1>{{ esc.titulo }}</h1>
+            @if (esc.narrativa) {
+              <p class="narrativa">{{ esc.narrativa }}</p>
+            }
 
             @if (esc.preguntas.length === 0) {
               <p class="vacio">Este escenario no tiene preguntas.</p>
             }
 
             @for (preg of esc.preguntas; track preg.id; let i = $index) {
-              <section class="pregunta">
-                <h3>Pregunta {{ i + 1 }}: {{ preg.enunciado }}</h3>
-                <mat-radio-group
-                  [value]="seleccionDe(preg)"
-                  class="radio-list">
+              <section class="pregunta" [class.respondida]="seleccionDe(preg)">
+                <header class="preg-head">
+                  <span class="preg-num">P{{ i + 1 }}</span>
+                  <h3>{{ preg.enunciado }}</h3>
+                </header>
+
+                <div class="opciones">
                   @for (resp of preg.respuestas; track resp.id) {
-                    <mat-radio-button
-                      [value]="resp.id"
-                      (change)="responder(preg, resp)">
-                      {{ resp.texto }}
-                    </mat-radio-button>
+                    <button
+                      type="button"
+                      class="opcion"
+                      [class.selected]="seleccionDe(preg) === resp.id"
+                      (click)="responder(preg, resp)">
+                      <span class="bullet">
+                        @if (seleccionDe(preg) === resp.id) {
+                          <mat-icon>check</mat-icon>
+                        }
+                      </span>
+                      <span class="texto">{{ resp.texto }}</span>
+                    </button>
                   }
-                </mat-radio-group>
+                </div>
               </section>
             }
-          </mat-card>
+          </article>
         }
       }
 
-      <!-- Navegación -->
-      <nav class="nav">
-        <button mat-stroked-button (click)="anterior()" [disabled]="esPrimeraPagina()">
+      <!-- Navegación inferior -->
+      <nav class="nav-bottom">
+        <button mat-stroked-button class="nav-btn" (click)="anterior()" [disabled]="esPrimeraPagina()">
           <mat-icon>arrow_back</mat-icon> Anterior
         </button>
 
+        <span class="paso-actual">
+          Paso {{ paginaIdx() + 1 }} de {{ paginas().length }}
+        </span>
+
         @if (!esUltimaPagina()) {
-          <button mat-flat-button color="primary" (click)="siguiente()">
+          <button mat-flat-button color="primary" class="nav-btn" (click)="siguiente()">
             Siguiente <mat-icon>arrow_forward</mat-icon>
           </button>
         } @else {
-          <button mat-flat-button color="warn" (click)="finalizar()">
-            <mat-icon>check</mat-icon> Finalizar práctica
+          <button mat-flat-button color="warn" class="nav-btn finalizar" (click)="finalizar()">
+            <mat-icon>flag</mat-icon> Finalizar
           </button>
         }
       </nav>

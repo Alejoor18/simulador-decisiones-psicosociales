@@ -1,15 +1,18 @@
 <div class="login-card">
-  <h1 class="title">Iniciar sesión</h1>
-  <p class="subtitle">Acceso para docentes y administradores</p>
+  <header class="head">
+    <h1>Bienvenido de nuevo</h1>
+    <p>Ingresa con tu cuenta de docente o administrador.</p>
+  </header>
 
   @if (loading()) {
-    <mat-progress-bar mode="indeterminate" />
+    <mat-progress-bar mode="indeterminate" class="progress" />
   }
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="form" autocomplete="on">
 
     <mat-form-field appearance="outline">
       <mat-label>Usuario</mat-label>
+      <mat-icon matIconPrefix>person</mat-icon>
       <input
         matInput
         type="text"
@@ -23,6 +26,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Contraseña</mat-label>
+      <mat-icon matIconPrefix>lock</mat-icon>
       <input
         matInput
         [type]="hidePassword() ? 'password' : 'text'"
@@ -55,17 +59,28 @@
       type="submit"
       [disabled]="form.invalid || loading()"
       class="submit-btn">
-      Iniciar sesión
+      <mat-icon>login</mat-icon>
+      <span>Iniciar sesión</span>
     </button>
   </form>
 
-  <p class="footer-link">
-    ¿No tienes cuenta de docente?
-    <a routerLink="/auth/registro-docente">Regístrate aquí</a>
-  </p>
+  <p class="divider"><span>o</span></p>
 
-  <p class="footer-link">
-    ¿Eres estudiante?
-    <a routerLink="/estudiante">Accede con tu código</a>
-  </p>
+  <div class="alt-links">
+    <a routerLink="/auth/registro-docente" class="alt-link">
+      <mat-icon>person_add</mat-icon>
+      <div>
+        <strong>Crear cuenta de docente</strong>
+        <span>Empieza a diseñar casos en minutos.</span>
+      </div>
+    </a>
+
+    <a routerLink="/estudiante" class="alt-link">
+      <mat-icon>school</mat-icon>
+      <div>
+        <strong>Soy estudiante</strong>
+        <span>Acceso con correo + código de práctica.</span>
+      </div>
+    </a>
+  </div>
 </div>
