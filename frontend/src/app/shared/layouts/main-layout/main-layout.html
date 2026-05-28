@@ -11,7 +11,7 @@
     <mat-toolbar class="sidenav-header">Menú</mat-toolbar>
 
     <mat-nav-list>
-      @for (item of navItems; track item.route) {
+      @for (item of navItems(); track item.route) {
         <a
           mat-list-item
           [routerLink]="item.route"
@@ -37,9 +37,31 @@
       }
       <span class="app-name">{{ appName }}</span>
       <span class="spacer"></span>
-      <button mat-icon-button aria-label="Cuenta">
-        <mat-icon>account_circle</mat-icon>
-      </button>
+
+      @if (usuario(); as u) {
+        <button
+          mat-button
+          class="user-btn"
+          [matMenuTriggerFor]="userMenu"
+          aria-label="Menú de usuario">
+          <span class="avatar">{{ iniciales() }}</span>
+          <span class="user-name">{{ u.nombre_completo }}</span>
+          <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <div class="menu-header">
+            <p class="menu-user">{{ u.nombre_completo }}</p>
+            <p class="menu-email">{{ u.email }}</p>
+            <p class="menu-rol">{{ u.rol }}</p>
+          </div>
+          <mat-divider />
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </mat-menu>
+      }
     </mat-toolbar>
 
     <main class="main-content">
