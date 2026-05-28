@@ -1,7 +1,12 @@
-"""Rutas de la app resultados. Pendiente de implementar."""
+"""Rutas de la app resultados."""
 
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from .views import ResultadoViewSet
 
 app_name = 'resultados'
 
-urlpatterns: list = []
+router = DefaultRouter()
+router.register('', ResultadoViewSet, basename='resultados')
+
+urlpatterns = router.urls
