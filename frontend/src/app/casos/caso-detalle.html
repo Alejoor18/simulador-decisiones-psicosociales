@@ -1,0 +1,163 @@
+<section class="page">
+  <a routerLink="/casos" class="back-link"><mat-icon>arrow_back</mat-icon>Volver a casos</a>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+
+  @if (caso(); as c) {
+    <header class="head">
+      <h1>{{ c.nombre }}</h1>
+      <div class="meta">
+        @if (c.area_psicosocial) { <span>{{ c.area_psicosocial }}</span> }
+        <span>{{ c.tiempo_estimado_min }} min</span>
+        <span class="estado">{{ c.estado_display }}</span>
+      </div>
+      @if (c.descripcion) { <p class="desc">{{ c.descripcion }}</p> }
+    </header>
+
+    <!-- Historia / Contexto -->
+    <mat-card class="seccion">
+      <mat-card-header>
+        <mat-card-title>Historia y contexto (storytelling)</mat-card-title>
+        <mat-card-subtitle>Esto es lo que el estudiante leerá al iniciar el caso.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Contexto / historia</mat-label>
+          <textarea matInput [(ngModel)]="c.contexto_historia" rows="5"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Desarrollo situacional</mat-label>
+          <textarea matInput [(ngModel)]="c.desarrollo_situacional" rows="4"></textarea>
+        </mat-form-field>
+        <button mat-flat-button color="primary" (click)="guardarTextoLargo()">
+          <mat-icon>save</mat-icon> Guardar
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Escenarios -->
+    <div class="escenarios-header">
+      <h2>Escenarios</h2>
+      <button mat-flat-button color="primary" (click)="agregarEscenario()">
+        <mat-icon>add</mat-icon> Agregar escenario
+      </button>
+    </div>
+
+    @if (c.escenarios.length === 0) {
+      <p class="empty">Este caso aún no tiene escenarios. Agrega el primero arriba.</p>
+    }
+
+    <mat-accordion multi>
+      @for (esc of c.escenarios; track esc.id) {
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>#{{ esc.orden }} · {{ esc.titulo }}</mat-panel-title>
+            <mat-panel-description>{{ esc.preguntas.length }} preguntas</mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="esc-edit">
+            <mat-form-field appearance="outline">
+              <mat-label>Orden</mat-label>
+              <input matInput type="number" [(ngModel)]="esc.orden" min="1" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="grow">
+              <mat-label>Título</mat-label>
+              <input matInput [(ngModel)]="esc.titulo" />
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Narrativa</mat-label>
+            <textarea matInput [(ngModel)]="esc.narrativa" rows="3"></textarea>
+          </mat-form-field>
+          <div class="esc-actions">
+            <button mat-button color="primary" (click)="guardarEscenario(esc)">
+              <mat-icon>save</mat-icon> Guardar escenario
+            </button>
+            <button mat-button color="warn" (click)="eliminarEscenario(esc)">
+              <mat-icon>delete</mat-icon> Eliminar escenario
+            </button>
+          </div>
+
+          <mat-divider />
+
+          <div class="preg-section">
+            <div class="preg-header">
+              <strong>Preguntas</strong>
+              <button mat-stroked-button color="primary" (click)="agregarPregunta(esc)">
+                <mat-icon>add</mat-icon> Agregar pregunta
+              </button>
+            </div>
+
+            @if (esc.preguntas.length === 0) {
+              <p class="empty-inline">Sin preguntas aún.</p>
+            }
+
+            @for (p of esc.preguntas; track p.id) {
+              <div class="pregunta">
+                <div class="preg-edit">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Orden</mat-label>
+                    <input matInput type="number" [(ngModel)]="p.orden" min="1" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="grow">
+                    <mat-label>Enunciado</mat-label>
+                    <input matInput [(ngModel)]="p.enunciado" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="peso">
+                    <mat-label>Peso</mat-label>
+                    <input matInput type="number" [(ngModel)]="p.peso" min="1" />
+                  </mat-form-field>
+                </div>
+                <div class="preg-actions">
+                  <button mat-icon-button color="primary" matTooltip="Guardar" (click)="guardarPregunta(p)">
+                    <mat-icon>save</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminarPregunta(p)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+
+                <div class="resp-section">
+                  <div class="resp-header">
+                    <span>Respuestas</span>
+                    <button mat-button color="primary" (click)="agregarRespuesta(p)">
+                      <mat-icon>add</mat-icon> Agregar respuesta
+                    </button>
+                  </div>
+
+                  @if (p.respuestas.length === 0) {
+                    <p class="empty-inline">Sin respuestas aún.</p>
+                  }
+
+                  @for (r of p.respuestas; track r.id) {
+                    <div class="respuesta" [class.correcta]="r.es_correcta">
+                      <div class="resp-edit">
+                        <mat-form-field appearance="outline" class="grow">
+                          <mat-label>Texto</mat-label>
+                          <input matInput [(ngModel)]="r.texto" />
+                        </mat-form-field>
+                        <mat-checkbox [(ngModel)]="r.es_correcta">Correcta</mat-checkbox>
+                      </div>
+                      <mat-form-field appearance="outline" class="full">
+                        <mat-label>Retroalimentación</mat-label>
+                        <textarea matInput [(ngModel)]="r.retroalimentacion" rows="2"></textarea>
+                      </mat-form-field>
+                      <div class="resp-actions">
+                        <button mat-button color="primary" (click)="guardarRespuesta(r)">
+                          <mat-icon>save</mat-icon> Guardar
+                        </button>
+                        <button mat-button color="warn" (click)="eliminarRespuesta(r)">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  }
+</section>
