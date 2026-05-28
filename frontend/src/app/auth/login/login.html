@@ -1,0 +1,71 @@
+<div class="login-card">
+  <h1 class="title">Iniciar sesión</h1>
+  <p class="subtitle">Acceso para docentes y administradores</p>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form" autocomplete="on">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Usuario</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="username"
+        autocomplete="username"
+        required />
+      @if (form.controls.username.touched && form.controls.username.hasError('required')) {
+        <mat-error>El usuario es obligatorio.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contraseña</mat-label>
+      <input
+        matInput
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password"
+        autocomplete="current-password"
+        required />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        (click)="togglePassword()"
+        [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'">
+        <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+        <mat-error>La contraseña es obligatoria.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (error()) {
+      <div class="server-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid || loading()"
+      class="submit-btn">
+      Iniciar sesión
+    </button>
+  </form>
+
+  <p class="footer-link">
+    ¿No tienes cuenta de docente?
+    <a routerLink="/auth/registro-docente">Regístrate aquí</a>
+  </p>
+
+  <p class="footer-link">
+    ¿Eres estudiante?
+    <a routerLink="/estudiante">Accede con tu código</a>
+  </p>
+</div>
