@@ -34,7 +34,7 @@ urlpatterns = [
     # Cada app expone sus endpoints específicos. Por ahora están vacíos pero registrados.
     path('api/auth/', include('apps.usuarios.urls')),
     path('api/', include('apps.academico.urls')),
-    path('api/casos/', include('apps.casos.urls')),
+    path('api/', include('apps.casos.urls')),
     path('api/ia/', include('apps.ia_generativa.urls')),
     path('api/importacion/', include('apps.importacion_documentos.urls')),
     path('api/practicas/', include('apps.practicas.urls')),
