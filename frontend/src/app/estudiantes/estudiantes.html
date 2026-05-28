@@ -1,0 +1,76 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="title">Estudiantes</h1>
+      <p class="subtitle">
+        @if (!loading()) { {{ total() }} estudiantes en tu lista. }
+        @else { Cargando… }
+      </p>
+    </div>
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="crear()">
+        <mat-icon>person_add</mat-icon>
+        <span>Crear estudiante</span>
+      </button>
+      <button mat-flat-button color="primary" (click)="agregarPorCorreo()">
+        <mat-icon>email</mat-icon>
+        <span>Agregar por correo</span>
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+
+  <div class="table-wrapper">
+    <table mat-table [dataSource]="estudiantes()" class="table">
+
+      <ng-container matColumnDef="nombre_completo">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let e">{{ e.nombre_completo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="correo">
+        <th mat-header-cell *matHeaderCellDef>Correo</th>
+        <td mat-cell *matCellDef="let e">{{ e.correo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let e">
+          <span [class.activo]="e.activo" [class.inactivo]="!e.activo">
+            {{ e.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="creado_por">
+        <th mat-header-cell *matHeaderCellDef>Creado por</th>
+        <td mat-cell *matCellDef="let e">{{ e.docente_creador_username }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef class="acciones-col">Acciones</th>
+        <td mat-cell *matCellDef="let e" class="acciones-col">
+          <button mat-icon-button matTooltip="Editar" (click)="editar(e)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Desvincular" color="warn" (click)="desvincular(e)">
+            <mat-icon>person_remove</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+
+      <tr *matNoDataRow class="no-data">
+        <td [attr.colspan]="columnas.length">
+          @if (loading()) { Cargando… }
+          @else {
+            No tienes estudiantes. Usa "Agregar por correo" o "Crear estudiante" para empezar.
+          }
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>
