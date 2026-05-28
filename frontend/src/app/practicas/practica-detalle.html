@@ -1,0 +1,97 @@
+<section class="page">
+  <a routerLink="/practicas" class="back"><mat-icon>arrow_back</mat-icon>Volver</a>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+
+  @if (practica(); as p) {
+    <header class="head">
+      <h1>{{ p.nombre }}</h1>
+      <div class="meta">
+        <span>Caso: {{ p.caso_nombre }}</span>
+        <span>Inicio: {{ p.fecha_inicio | date:'medium' }}</span>
+        <span>Fin: {{ p.fecha_fin | date:'medium' }}</span>
+        <span>Tiempo máx.: {{ p.tiempo_max_min }} min</span>
+        @if (p.lugar_fisico) { <span>Lugar: {{ p.lugar_fisico }}</span> }
+        <mat-chip>{{ p.estado_display }}</mat-chip>
+      </div>
+      @if (p.mensaje_personalizado) {
+        <p class="msg">{{ p.mensaje_personalizado }}</p>
+      }
+
+      <div class="actions">
+        @if (p.estado === EstadoPractica.SinIniciar) {
+          <button mat-flat-button color="primary" (click)="iniciar()">
+            <mat-icon>play_arrow</mat-icon> Iniciar práctica
+          </button>
+        }
+        @if (p.estado === EstadoPractica.EnCurso) {
+          <button mat-flat-button color="warn" (click)="finalizar()">
+            <mat-icon>stop</mat-icon> Finalizar
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Autorización -->
+    <mat-card class="seccion">
+      <mat-card-header>
+        <mat-card-title>Autorizar estudiantes</mat-card-title>
+        <mat-card-subtitle>Selecciona estudiantes o grupos. Se generará un código de acceso único para cada uno.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="cols">
+          <div>
+            <h3>Estudiantes</h3>
+            @if (estudiantes().length === 0) { <p class="empty">No tienes estudiantes.</p> }
+            <ul class="check-list">
+              @for (e of estudiantes(); track e.id) {
+                <li><mat-checkbox [(ngModel)]="seleccionEst[e.id]">{{ e.nombre_completo }} <span class="correo">{{ e.correo }}</span></mat-checkbox></li>
+              }
+            </ul>
+          </div>
+          <div>
+            <h3>Grupos</h3>
+            @if (grupos().length === 0) { <p class="empty">No tienes grupos.</p> }
+            <ul class="check-list">
+              @for (g of grupos(); track g.id) {
+                <li><mat-checkbox [(ngModel)]="seleccionGrupo[g.id]">{{ g.nombre }} <span class="correo">{{ g.estudiantes_count }} estudiantes</span></mat-checkbox></li>
+              }
+            </ul>
+          </div>
+        </div>
+        <button mat-flat-button color="primary" (click)="autorizar()">
+          <mat-icon>add</mat-icon> Autorizar seleccionados
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Códigos -->
+    <mat-card class="seccion">
+      <mat-card-header>
+        <mat-card-title>Estudiantes autorizados ({{ p.autorizaciones.length }})</mat-card-title>
+        <mat-card-subtitle>Comparte el código con cada estudiante para que pueda acceder a la simulación.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (p.autorizaciones.length === 0) {
+          <p class="empty">Aún no has autorizado a nadie.</p>
+        }
+        <ul class="codigos">
+          @for (a of p.autorizaciones; track a.id) {
+            <li>
+              <div>
+                <strong>{{ a.estudiante_nombre }}</strong>
+                <span class="correo">{{ a.estudiante_correo }}</span>
+              </div>
+              <div class="codigo">
+                <code>{{ a.codigo_acceso }}</code>
+                <button mat-icon-button matTooltip="Copiar código" (click)="copiar(a.codigo_acceso)">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>
