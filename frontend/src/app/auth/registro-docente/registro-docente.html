@@ -1,0 +1,124 @@
+<div class="registro-card">
+  <h1 class="title">Registro de docente</h1>
+  <p class="subtitle">Crea tu cuenta para empezar a diseñar casos</p>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form" autocomplete="on">
+
+    <div class="row-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput type="text" formControlName="first_name" autocomplete="given-name" required />
+        @if (form.controls.first_name.touched && form.controls.first_name.hasError('required')) {
+          <mat-error>El nombre es obligatorio.</mat-error>
+        }
+        @for (e of fieldErrors('first_name'); track e) { <mat-error>{{ e }}</mat-error> }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Apellido</mat-label>
+        <input matInput type="text" formControlName="last_name" autocomplete="family-name" required />
+        @if (form.controls.last_name.touched && form.controls.last_name.hasError('required')) {
+          <mat-error>El apellido es obligatorio.</mat-error>
+        }
+        @for (e of fieldErrors('last_name'); track e) { <mat-error>{{ e }}</mat-error> }
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Usuario</mat-label>
+      <input matInput type="text" formControlName="username" autocomplete="username" required />
+      <mat-hint>Lo usarás para iniciar sesión.</mat-hint>
+      @if (form.controls.username.touched && form.controls.username.hasError('required')) {
+        <mat-error>El usuario es obligatorio.</mat-error>
+      }
+      @for (e of fieldErrors('username'); track e) { <mat-error>{{ e }}</mat-error> }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Correo electrónico</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" required />
+      @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+        <mat-error>El correo es obligatorio.</mat-error>
+      }
+      @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+        <mat-error>Formato de correo inválido.</mat-error>
+      }
+      @for (e of fieldErrors('email'); track e) { <mat-error>{{ e }}</mat-error> }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contraseña</mat-label>
+      <input
+        matInput
+        [type]="hidePassword() ? 'password' : 'text'"
+        formControlName="password"
+        autocomplete="new-password"
+        required />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        (click)="hidePassword.set(!hidePassword())"
+        [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'">
+        <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-hint>Mínimo 8 caracteres, no solo números.</mat-hint>
+      @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+        <mat-error>La contraseña es obligatoria.</mat-error>
+      }
+      @if (form.controls.password.touched && form.controls.password.hasError('minlength')) {
+        <mat-error>Mínimo 8 caracteres.</mat-error>
+      }
+      @for (e of fieldErrors('password'); track e) { <mat-error>{{ e }}</mat-error> }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Confirmar contraseña</mat-label>
+      <input
+        matInput
+        [type]="hidePasswordConfirm() ? 'password' : 'text'"
+        formControlName="password_confirm"
+        autocomplete="new-password"
+        required />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        (click)="hidePasswordConfirm.set(!hidePasswordConfirm())"
+        [attr.aria-label]="'Mostrar/ocultar contraseña'">
+        <mat-icon>{{ hidePasswordConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.controls.password_confirm.touched && form.controls.password_confirm.hasError('required')) {
+        <mat-error>Confirma la contraseña.</mat-error>
+      }
+      @if (form.controls.password_confirm.touched && form.hasError('passwordMismatch')) {
+        <mat-error>Las contraseñas no coinciden.</mat-error>
+      }
+      @for (e of fieldErrors('password_confirm'); track e) { <mat-error>{{ e }}</mat-error> }
+    </mat-form-field>
+
+    @if (hasGeneralError) {
+      <div class="server-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ generalError() }}</span>
+      </div>
+    }
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid || loading()"
+      class="submit-btn">
+      Crear cuenta
+    </button>
+  </form>
+
+  <p class="footer-link">
+    ¿Ya tienes cuenta? <a routerLink="/auth/login">Inicia sesión</a>
+  </p>
+</div>

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { JwtPayload, Rol, TokenPair, Usuario } from '../models/usuario.model';
@@ -9,6 +9,21 @@ import { JwtPayload, Rol, TokenPair, Usuario } from '../models/usuario.model';
 const ACCESS_KEY = 'simulador.access';
 const REFRESH_KEY = 'simulador.refresh';
 const USER_KEY = 'simulador.user';
+
+/** Respuesta del backend para login/registro: tokens + usuario. */
+interface AuthResponse extends TokenPair {
+  usuario: Usuario;
+}
+
+/** Datos para el registro autónomo de un docente. */
+export interface RegistroDocenteData {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  password_confirm: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,34 +45,52 @@ export class AuthService {
 
   // ---------- Login docente/administrador (username + password) ----------
 
-  loginDocente(username: string, password: string): Observable<TokenPair> {
+  loginDocente(username: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<TokenPair>(`${environment.apiUrl}/auth/token/`, { username, password })
-      .pipe(
-        tap((tokens) => {
-          this.saveTokens(tokens);
-          // El perfil del usuario lo cargaremos en una fase posterior cuando exista
-          // el endpoint /api/auth/perfil/. Por ahora decodificamos el JWT para tener el user_id.
-        }),
-      );
+      .post<AuthResponse>(`${environment.apiUrl}/auth/token/`, { username, password })
+      .pipe(tap((res) => this.handleAuthSuccess(res)));
   }
 
-  // ---------- Acceso estudiante (correo + código de autorización) ----------
+  // ---------- Registro autónomo de docente ----------
 
-  loginEstudiante(correo: string, codigo: string): Observable<TokenPair> {
+  registroDocente(data: RegistroDocenteData): Observable<AuthResponse> {
     return this.http
-      .post<TokenPair>(`${environment.apiUrl}/auth/estudiante-acceso/`, { correo, codigo })
-      .pipe(tap((tokens) => this.saveTokens(tokens)));
+      .post<AuthResponse>(`${environment.apiUrl}/auth/registro-docente/`, data)
+      .pipe(tap((res) => this.handleAuthSuccess(res)));
+  }
+
+  // ---------- Acceso estudiante (correo + código) — backend pendiente ----------
+
+  loginEstudiante(correo: string, codigo: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${environment.apiUrl}/auth/estudiante-acceso/`, { correo, codigo })
+      .pipe(tap((res) => this.handleAuthSuccess(res)));
   }
 
   // ---------- Logout ----------
 
-  logout(): void {
+  logout(): Observable<unknown> {
+    const refresh = this.getRefreshToken();
+    const request$ = refresh
+      ? this.http
+          .post(`${environment.apiUrl}/auth/logout/`, { refresh })
+          .pipe(catchError(() => of(null))) // si falla en el backend, igual hacemos logout local
+      : of(null);
+
+    return request$.pipe(
+      tap(() => {
+        this.clearLocalSession();
+        this.router.navigate(['/auth/login']);
+      }),
+    );
+  }
+
+  /** Limpia tokens y usuario en memoria/storage sin llamar al backend. */
+  clearLocalSession(): void {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
     this._usuario.set(null);
-    this.router.navigate(['/auth']);
   }
 
   // ---------- Tokens ----------
@@ -70,13 +103,20 @@ export class AuthService {
     return localStorage.getItem(REFRESH_KEY);
   }
 
-  refreshAccessToken(): Observable<{ access: string }> {
+  refreshAccessToken(): Observable<{ access: string; refresh?: string }> {
     const refresh = this.getRefreshToken();
     return this.http
-      .post<{ access: string }>(`${environment.apiUrl}/auth/token/refresh/`, { refresh })
+      .post<{ access: string; refresh?: string }>(
+        `${environment.apiUrl}/auth/token/refresh/`,
+        { refresh },
+      )
       .pipe(
         tap((res) => {
           localStorage.setItem(ACCESS_KEY, res.access);
+          if (res.refresh) {
+            // Con ROTATE_REFRESH_TOKENS=True el backend rota el refresh.
+            localStorage.setItem(REFRESH_KEY, res.refresh);
+          }
         }),
       );
   }
@@ -88,9 +128,18 @@ export class AuthService {
     return actual !== null && roles.includes(actual);
   }
 
-  private saveTokens(tokens: TokenPair): void {
-    localStorage.setItem(ACCESS_KEY, tokens.access);
-    localStorage.setItem(REFRESH_KEY, tokens.refresh);
+  /** Dashboard inicial según rol — útil para el redirect post-login. */
+  dashboardDeRol(rol: Rol | null): string {
+    if (rol === Rol.Admin) return '/admin';
+    if (rol === Rol.Estudiante) return '/estudiante';
+    return '/docente'; // default y fallback
+  }
+
+  private handleAuthSuccess(res: AuthResponse): void {
+    localStorage.setItem(ACCESS_KEY, res.access);
+    localStorage.setItem(REFRESH_KEY, res.refresh);
+    localStorage.setItem(USER_KEY, JSON.stringify(res.usuario));
+    this._usuario.set(res.usuario);
   }
 
   private loadUserFromStorage(): Usuario | null {
