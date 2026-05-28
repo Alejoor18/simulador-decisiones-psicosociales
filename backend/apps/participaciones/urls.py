@@ -1,7 +1,12 @@
-"""Rutas de la app participaciones. Pendiente de implementar."""
+"""Rutas de la app participaciones."""
 
-from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from .views import ParticipacionViewSet
 
 app_name = 'participaciones'
 
-urlpatterns: list = []
+router = DefaultRouter()
+router.register('', ParticipacionViewSet, basename='participaciones')
+
+urlpatterns = router.urls
