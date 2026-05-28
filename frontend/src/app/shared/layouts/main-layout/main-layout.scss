@@ -1,0 +1,65 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.layout-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 260px;
+  background-color: var(--mat-sys-surface-container);
+}
+
+.sidenav-header {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .app-name {
+    font-weight: 500;
+    font-size: 1.05rem;
+    margin-left: 0.25rem;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1 1 auto;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+a.active-link {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+/* Responsive tweaks */
+@media (max-width: 599px) {
+  .sidenav {
+    width: 80vw;
+    max-width: 320px;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+}
