@@ -15,7 +15,10 @@ export interface Usuario {
   email: string;
   first_name?: string;
   last_name?: string;
+  /** Nombre completo derivado por el backend (first_name + last_name, o username si están vacíos). */
+  nombre_completo: string;
   rol: Rol;
+  date_joined?: string;
 }
 
 /** Respuesta del endpoint /api/auth/token/ de SimpleJWT. */
