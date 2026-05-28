@@ -1,0 +1,91 @@
+# =========================================================
+# docker-compose.yml
+# Orquesta: PostgreSQL (db) + Backend Django (backend)
+#
+# Uso:
+#   docker compose up --build -d     # levantar en background
+#   docker compose logs -f backend   # ver logs del backend
+#   docker compose exec backend python manage.py migrate
+#   docker compose exec backend python manage.py createsuperuser
+#   docker compose down              # detener (datos persisten en el volumen)
+#   docker compose down -v           # detener y BORRAR datos (cuidado)
+# =========================================================
+
+services:
+
+  # -------------------------------------------------------
+  # Base de datos PostgreSQL
+  # -------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: simulador_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Exponer al host es útil para conectar pgAdmin/DBeaver desde Windows.
+      # Puerto del host configurable vía POSTGRES_HOST_PORT (default 5435 para no
+      # chocar con otros contenedores postgres que puedas tener corriendo).
+      # En producción se quita esta línea.
+      - "${POSTGRES_HOST_PORT:-5435}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - simulador_net
+
+  # -------------------------------------------------------
+  # Backend Django
+  # -------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: simulador_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      # Forzamos POSTGRES_HOST=db: dentro de la red de compose, el servicio se resuelve por nombre.
+      POSTGRES_HOST: db
+    volumes:
+      # Bind-mount del código fuente: cambios locales se reflejan en el contenedor
+      # sin tener que reconstruir la imagen.
+      - ./backend:/app
+      - media_files:/app/media
+      - static_files:/app/staticfiles
+    ports:
+      - "8000:8000"
+    networks:
+      - simulador_net
+
+# =========================================================
+# Volúmenes
+# - postgres_data: datos persistentes de PostgreSQL
+# - media_files: uploads (PDFs, imágenes, etc.)
+# - static_files: estáticos colectados (admin, DRF browsable API)
+# =========================================================
+volumes:
+  postgres_data:
+    name: simulador_postgres_data
+  media_files:
+    name: simulador_media_files
+  static_files:
+    name: simulador_static_files
+
+# =========================================================
+# Red interna
+# =========================================================
+networks:
+  simulador_net:
+    name: simulador_net
+    driver: bridge
