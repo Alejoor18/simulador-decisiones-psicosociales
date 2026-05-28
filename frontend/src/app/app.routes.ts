@@ -51,6 +51,19 @@ export const routes: Routes = [
         data: { roles: [Rol.Docente] },
       },
       {
+        path: 'estudiantes',
+        loadChildren: () =>
+          import('./estudiantes/estudiantes.routes').then((m) => m.ESTUDIANTES_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Admin] },
+      },
+      {
+        path: 'grupos',
+        loadChildren: () => import('./grupos/grupos.routes').then((m) => m.GRUPOS_ROUTES),
+        canActivate: [roleGuard],
+        data: { roles: [Rol.Docente, Rol.Admin] },
+      },
+      {
         path: 'casos',
         loadChildren: () => import('./casos/casos.routes').then((m) => m.CASOS_ROUTES),
         canActivate: [roleGuard],

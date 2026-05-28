@@ -1,0 +1,86 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="title">Grupos académicos</h1>
+      <p class="subtitle">
+        @if (!loading()) { {{ grupos().length }} grupos. }
+        @else { Cargando… }
+      </p>
+    </div>
+    <button mat-flat-button color="primary" (click)="crear()">
+      <mat-icon>add</mat-icon>
+      <span>Crear grupo</span>
+    </button>
+  </header>
+
+  @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+
+  @if (!loading() && grupos().length === 0) {
+    <div class="empty">
+      <mat-icon>folder_open</mat-icon>
+      <p>Aún no has creado ningún grupo.</p>
+      <button mat-stroked-button color="primary" (click)="crear()">Crear el primero</button>
+    </div>
+  }
+
+  <div class="cards">
+    @for (g of grupos(); track g.id) {
+      <mat-card
+        class="grupo-card"
+        [class.expanded]="grupoExpandidoId() === g.id"
+        (click)="expandir(g)">
+        <mat-card-header>
+          <mat-card-title>{{ g.nombre }}</mat-card-title>
+          <mat-card-subtitle>{{ g.estudiantes_count }} estudiantes</mat-card-subtitle>
+          <div class="card-actions">
+            <button mat-icon-button matTooltip="Editar" (click)="editar(g, $event)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminar(g, $event)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </mat-card-header>
+
+        @if (g.descripcion) {
+          <mat-card-content>
+            <p class="desc">{{ g.descripcion }}</p>
+          </mat-card-content>
+        }
+
+        @if (grupoExpandidoId() === g.id && detalle()) {
+          <mat-card-content class="detalle">
+            <div class="detalle-header">
+              <strong>Estudiantes del grupo</strong>
+              <button mat-stroked-button color="primary" (click)="agregarEstudiantes(); $event.stopPropagation()">
+                <mat-icon>person_add</mat-icon>
+                <span>Agregar</span>
+              </button>
+            </div>
+            @if (detalle()!.estudiantes.length === 0) {
+              <p class="vacio">Este grupo aún no tiene estudiantes.</p>
+            } @else {
+              <ul class="estudiantes-list">
+                @for (e of detalle()!.estudiantes; track e.id) {
+                  <li>
+                    <div>
+                      <span class="nombre">{{ e.nombre_completo }}</span>
+                      <span class="correo">{{ e.correo }}</span>
+                    </div>
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      matTooltip="Remover del grupo"
+                      (click)="removerEstudiante(e.id); $event.stopPropagation()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </mat-card-content>
+        }
+      </mat-card>
+    }
+  </div>
+</section>

@@ -61,6 +61,8 @@ export class MainLayout {
   private readonly allNavItems: NavItem[] = [
     { label: 'Panel administrador', route: '/admin', icon: 'admin_panel_settings', roles: [Rol.Admin] },
     { label: 'Panel docente', route: '/docente', icon: 'school', roles: [Rol.Docente] },
+    { label: 'Estudiantes', route: '/estudiantes', icon: 'group', roles: [Rol.Docente, Rol.Admin] },
+    { label: 'Grupos', route: '/grupos', icon: 'workspaces', roles: [Rol.Docente, Rol.Admin] },
     { label: 'Casos de estudio', route: '/casos', icon: 'menu_book', roles: [Rol.Docente, Rol.Admin] },
     { label: 'IA generativa', route: '/ia-generativa', icon: 'auto_awesome', roles: [Rol.Docente] },
     { label: 'Importar documentos', route: '/importacion-documentos', icon: 'upload_file', roles: [Rol.Docente] },
