@@ -1,0 +1,95 @@
+<app-estudiante-shell>
+  <section class="module page">
+    <div class="page-head">
+      <div class="page-head__main hero-glass hero-glass--estudiante">
+        <h1><em>Mis</em> prácticas</h1>
+        <p class="hero-glass__meta">Gestiona, inicia y retoma tus simulaciones asignadas</p>
+      </div>
+    </div>
+
+    <section class="metrics metrics--compact">
+      <article class="metric metric--accent">
+        <div class="metric__value">{{ resumen().pendientes }}</div>
+        <div class="metric__label">Pendientes</div>
+      </article>
+      <article class="metric metric--teal">
+        <div class="metric__value">{{ resumen().enCurso }}</div>
+        <div class="metric__label">En curso</div>
+      </article>
+      <article class="metric">
+        <div class="metric__value">{{ resumen().completadas }}</div>
+        <div class="metric__label">Completadas</div>
+      </article>
+      <article class="metric">
+        <div class="metric__value">{{ practicas().length }}</div>
+        <div class="metric__label">Total</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <nav class="subnav subnav--inline" aria-label="Filtros de prácticas">
+          @for (v of vistas; track v.id) {
+            <button type="button" class="subnav-btn" [class.active]="vista() === v.id" (click)="vista.set(v.id)">
+              {{ v.label }}
+            </button>
+          }
+        </nav>
+      </div>
+
+      <div class="panel__body">
+        @if (filtradas().length === 0) {
+          <div class="empty-state">
+            <strong>Sin prácticas {{ vistaLabel() }}</strong>
+            No hay registros en esta categoría por ahora.
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Práctica</th>
+                  <th>Inicio</th>
+                  <th>Tiempo</th>
+                  <th>Progreso</th>
+                  <th>Estado</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of filtradas(); track p.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ tituloPractica(p) }}</strong>
+                      <div class="muted">{{ p.nombre }}</div>
+                    </td>
+                    <td>{{ p.fecha_inicio | date:'shortDate' }}</td>
+                    <td>{{ p.tiempo_max_min }} min</td>
+                    <td>
+                      <div class="progress-bar progress-bar--table">
+                        <div class="progress-bar__fill" [style.width.%]="p.progreso.porcentaje"></div>
+                      </div>
+                      <span class="progress-pct">{{ p.progreso.porcentaje }}%</span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="badgeClase(p.progreso.estado)">
+                        {{ etiquetaEstado(p.progreso.estado) }}
+                      </span>
+                    </td>
+                    <td class="col-actions">
+                      <div class="actions actions--end">
+                        <button type="button" class="btn-ghost" (click)="accionPractica(p)">
+                          {{ etiquetaAccion(p.progreso.estado) }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+  </section>
+</app-estudiante-shell>

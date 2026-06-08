@@ -1,0 +1,77 @@
+<app-estudiante-shell>
+  <section class="module page">
+    <div class="page-head">
+      <div class="page-head__main hero-glass hero-glass--estudiante">
+        <h1>Hola, <em>{{ primerNombre() }}</em></h1>
+        <p class="hero-glass__meta">{{ metaLinea() }}</p>
+      </div>
+      <div class="page-head__actions">
+        <a routerLink="/estudiante/practicas" class="btn-secondary">Ver prácticas</a>
+      </div>
+    </div>
+
+    <section class="metrics">
+      <article class="metric metric--accent">
+        <div class="metric__value">{{ resumen().pendientes }}</div>
+        <div class="metric__label">Pendientes</div>
+      </article>
+      <article class="metric metric--teal">
+        <div class="metric__value">{{ resumen().enCurso }}</div>
+        <div class="metric__label">En curso</div>
+      </article>
+      <article class="metric">
+        <div class="metric__value">{{ resumen().completadas }}</div>
+        <div class="metric__label">Completadas</div>
+      </article>
+      <article class="metric">
+        <div class="metric__value">{{ promedioDisplay() }}</div>
+        <div class="metric__label">Promedio</div>
+      </article>
+    </section>
+
+    <div class="dashboard-priority">
+      @if (enCurso(); as activa) {
+        <div class="continue-card">
+          <div>
+            <h3>Continuar donde lo dejaste</h3>
+            <p>
+              <strong>{{ activa.caso_nombre }}</strong>
+              · {{ activa.progreso.porcentaje }}%
+              · {{ activa.tiempo_max_min }} min
+            </p>
+            <div class="progress-bar progress-bar--continue">
+              <div class="progress-bar__fill" [style.width.%]="activa.progreso.porcentaje"></div>
+            </div>
+          </div>
+          <button type="button" class="btn-primary" (click)="continuarSimulacion(activa.id)">
+            Continuar simulación
+          </button>
+        </div>
+      }
+
+      <section class="dash-minimal">
+        <div class="dash-minimal__head">
+          <h2>Pendientes</h2>
+          <button type="button" class="dash-minimal__link" routerLink="/estudiante/practicas">Ver todas</button>
+        </div>
+        @if (pendientes().length === 0) {
+          <p class="dash-list__empty">No tienes prácticas pendientes.</p>
+        } @else {
+          <ul class="dash-list">
+            @for (p of pendientes().slice(0, 3); track p.id) {
+              <li class="dash-list__item">
+                <div class="dash-list__main">
+                  <p class="dash-list__title">{{ p.caso_nombre }}</p>
+                  <p class="dash-list__meta">{{ metaPractica(p) }}</p>
+                </div>
+                <button type="button" class="dash-list__action" (click)="accionPractica(p)">
+                  {{ etiquetaAccion(p.progreso.estado) }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  </section>
+</app-estudiante-shell>

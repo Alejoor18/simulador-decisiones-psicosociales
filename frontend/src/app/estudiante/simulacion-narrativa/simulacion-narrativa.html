@@ -1,0 +1,69 @@
+@if (cargando() || fase() === 'cargando') {
+  <div class="simulacion-carga">
+    <mat-progress-bar mode="indeterminate" />
+    <p>Preparando práctica clínica…</p>
+  </div>
+}
+
+@if (error()) {
+  <div class="simulacion-error">
+    <mat-icon>error_outline</mat-icon>
+    <h1>No se pudo iniciar el caso</h1>
+    <p>{{ error() }}</p>
+    <button mat-stroked-button routerLink="/estudiante/panel">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al panel
+    </button>
+  </div>
+}
+
+@if (!error() && !cargando() && fase() !== 'cargando') {
+  <ng-container *ngTemplateOutlet="contenidoSimulacion" />
+}
+
+<ng-template #contenidoSimulacion>
+  <div
+    #viewport
+    class="simulacion-viewport"
+    [class.intro-activa]="fase() === 'intro'"
+    (click)="onInteraccionViewport()"
+    (keydown)="onInteraccionViewport()">
+    @if (fase() === 'intro') {
+      <div class="control-ambiente-intro">
+        <app-control-ambiente-audio />
+      </div>
+    }
+    @if (fase() === 'simulacion') {
+      <app-barra-simulacion
+        [nombrePractica]="nombrePractica()"
+        [nombreCaso]="nombreCaso()"
+        [estadoLabel]="estadoLabel()"
+        [pantallaCompletaActiva]="pantallaCompletaActiva()"
+        (libreta)="abrirLibreta()"
+        (mapa)="abrirMapa()"
+        (pantallaCompleta)="alternarPantallaCompleta()"
+        (salir)="confirmarSalida()" />
+    }
+
+    <div class="simulacion-stage">
+      @if (fase() === 'intro') {
+        <div class="simulacion-stage-canvas">
+          <app-introduccion-narrativa
+            [casoId]="casoId()"
+            (completada)="onIntroduccionCompleta()"
+            (sinIntroduccion)="onSinIntroduccion()" />
+        </div>
+      }
+
+      @if (fase() === 'simulacion') {
+        <div class="simulacion-stage-canvas">
+          <app-exploracion-visual [casoId]="casoId()" />
+        </div>
+      }
+    </div>
+
+    @if (fase() === 'simulacion') {
+      <app-libreta-psicologo [mostrarFab]="false" />
+    }
+  </div>
+</ng-template>

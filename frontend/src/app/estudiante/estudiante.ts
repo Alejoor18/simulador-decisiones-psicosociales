@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterLink } from '@angular/router';
 
 import { environment } from '../../environments/environment';
-import { AuthService } from '../core/auth/auth.service';
+import { EstudianteSessionService } from '../core/services/estudiante-session.service';
 import { PracticasService } from '../core/services/practicas.service';
 
 @Component({
@@ -15,10 +15,10 @@ import { PracticasService } from '../core/services/practicas.service';
   templateUrl: './estudiante.html',
   styleUrl: './estudiante.scss',
 })
-export class Estudiante {
+export class Estudiante implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly practicas = inject(PracticasService);
-  private readonly auth = inject(AuthService);
+  private readonly session = inject(EstudianteSessionService);
   private readonly router = inject(Router);
 
   readonly appName = environment.appName;
@@ -30,6 +30,13 @@ export class Estudiante {
     codigo: ['', [Validators.required]],
   });
 
+  ngOnInit(): void {
+    this.session.invalidarSiNecesario();
+    if (this.session.autenticado()) {
+      this.router.navigate(['/estudiante/panel']);
+    }
+  }
+
   ingresar() {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
@@ -40,8 +47,8 @@ export class Estudiante {
 
     this.practicas.accesoEstudiante(correo, codigo).subscribe({
       next: (res) => {
-        this.auth.establecerSesionEstudiante(res);
-        this.router.navigate(['/estudiante/simulacion']);
+        this.session.registrarAcceso(res);
+        this.router.navigate(['/estudiante/panel']);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

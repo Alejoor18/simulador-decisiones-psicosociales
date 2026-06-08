@@ -12,6 +12,13 @@ export const ESTUDIANTE_ROUTES: Routes = [
     title: 'Simulación · Simulador',
   },
   {
+    path: 'resultados',
+    canActivate: [estudianteAuthGuard],
+    loadComponent: () =>
+      import('./resultados-estudiante/resultados-estudiante').then((m) => m.EstudianteResultados),
+    title: 'Mis resultados · Simulador',
+  },
+  {
     path: 'resultado/:id',
     loadComponent: () => import('./resultado').then((m) => m.ResultadoEstudiante),
     title: 'Resultado · Simulador',

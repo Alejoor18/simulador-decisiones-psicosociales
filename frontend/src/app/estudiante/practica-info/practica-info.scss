@@ -1,0 +1,98 @@
+.practica-subtitulo {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--app-slate);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0 0 1rem;
+
+  dt {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--app-slate);
+    margin-bottom: 0.15rem;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    color: var(--app-ink);
+  }
+}
+
+.mensaje-docente {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(155, 114, 243, 0.06);
+  border: 1px solid var(--app-line);
+  margin-bottom: 1rem;
+
+  strong {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--app-ink);
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--app-slate);
+    font-size: 0.875rem;
+  }
+}
+
+.progreso-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  margin-bottom: 0.25rem;
+  color: var(--app-slate);
+}
+
+.progreso-detalle {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--app-slate);
+}
+
+.acciones-lead {
+  margin: 0 0 0.5rem;
+  color: var(--app-slate);
+  line-height: 1.55;
+  font-size: 0.875rem;
+}
+
+.acciones-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btn-volver {
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aviso {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--app-slate);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .datos {
+    grid-template-columns: 1fr;
+  }
+}

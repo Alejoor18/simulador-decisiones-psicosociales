@@ -1,0 +1,43 @@
+@import '../../shared/layouts/main-layout/main-layout.scss';
+
+:host {
+  display: block;
+  height: 100%;
+  min-height: 100vh;
+}
+
+.est-layout {
+  height: 100vh;
+  background: transparent;
+  overflow: hidden;
+}
+
+:host ::ng-deep .est-layout .mat-drawer-inner-container {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content.estudiante-module {
+  max-width: none;
+  margin: 0;
+}
+
+:host-context(app-simulacion-narrativa) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+:host-context(app-simulacion-narrativa) .est-layout {
+  height: 100%;
+}
+
+:host-context(app-simulacion-narrativa) .main-content.estudiante-module {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}

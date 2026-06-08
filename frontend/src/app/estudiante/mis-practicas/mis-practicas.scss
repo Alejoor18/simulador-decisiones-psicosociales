@@ -1,0 +1,18 @@
+.muted {
+  font-size: 0.72rem;
+  color: var(--app-slate);
+  margin-top: 3px;
+}
+
+.progress-bar--table {
+  width: 72px;
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.progress-pct {
+  font-size: 0.75rem;
+  color: var(--app-slate);
+  margin-left: 4px;
+}

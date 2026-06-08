@@ -1,0 +1,114 @@
+@if (practica(); as p) {
+  <app-estudiante-shell [titulo]="p.nombre">
+    <section class="module page">
+      <a routerLink="/estudiante/practicas" class="page-back">← Mis prácticas</a>
+
+      <header class="hero-glass">
+        <h1><em>{{ p.nombre }}</em></h1>
+        <p class="practica-subtitulo">{{ subtituloCaso() }}</p>
+      </header>
+
+      <div class="grid-2">
+        <section class="surface">
+          <div class="card__header">
+            <h2 class="card__title">Información de la práctica</h2>
+          </div>
+
+          <dl class="datos">
+            <div>
+              <dt>Estado</dt>
+              <dd>
+                <span class="badge" [ngClass]="badgeClase(p.progreso.estado)">
+                  {{ etiquetaEstado(p.progreso.estado) }}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Caso académico</dt>
+              <dd>{{ p.caso_nombre }}</dd>
+            </div>
+            <div>
+              <dt>Tiempo estimado</dt>
+              <dd>{{ p.tiempo_max_min }} minutos</dd>
+            </div>
+            <div>
+              <dt>Fecha de asignación</dt>
+              <dd>{{ p.fecha_inicio | date:'fullDate' }}</dd>
+            </div>
+            <div>
+              <dt>Fecha límite</dt>
+              <dd>{{ p.fecha_fin | date:'fullDate' }}</dd>
+            </div>
+          </dl>
+
+          @if (p.mensaje_personalizado) {
+            <div class="mensaje-docente">
+              <strong>Mensaje del docente</strong>
+              <p>{{ p.mensaje_personalizado }}</p>
+            </div>
+          }
+
+          <div class="progreso">
+            <div class="progreso-head">
+              <span>Progreso registrado</span>
+              <strong>{{ p.progreso.porcentaje }}%</strong>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar__fill" [style.width.%]="p.progreso.porcentaje"></div>
+            </div>
+            @if (p.progreso.conversacionesTotales > 0) {
+              <p class="progreso-detalle">
+                {{ p.progreso.conversacionesCompletadas }} de
+                {{ p.progreso.conversacionesTotales }} entrevistas exploradas
+              </p>
+            }
+          </div>
+        </section>
+
+        <aside class="surface">
+          <div class="card__header">
+            <h2 class="card__title">Iniciar actividad</h2>
+          </div>
+
+          <p class="acciones-lead">
+            La simulación narrativa se abrirá dentro de la plataforma. Podrás activar
+            pantalla completa cuando quieras una experiencia más inmersiva.
+          </p>
+
+          @if (catalogo()) {
+            <ul class="activity-list">
+              <li class="activity-item">
+                <span class="activity-item__dot"></span>
+                <span class="activity-item__text">Exploración clínica guiada</span>
+              </li>
+              <li class="activity-item">
+                <span class="activity-item__dot activity-item__dot--teal"></span>
+                <span class="activity-item__text">Entrevistas con actores del caso</span>
+              </li>
+              <li class="activity-item">
+                <span class="activity-item__dot"></span>
+                <span class="activity-item__text">Libreta de registro psicosocial</span>
+              </li>
+            </ul>
+          }
+
+          <div class="acciones-botones">
+            <button
+              type="button"
+              class="btn-mockup-primary btn-mockup-primary--full"
+              [disabled]="!puedeIniciar()"
+              (click)="iniciarSimulacion()">
+              Iniciar simulación
+            </button>
+
+            @if (!puedeIniciar()) {
+              <p class="aviso">Esta práctica estará disponible próximamente.</p>
+            }
+
+            <a routerLink="/estudiante/panel" class="btn-mockup-secondary btn-volver">Volver al panel</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </app-estudiante-shell>
+}
